@@ -1,4 +1,4 @@
-from aiogram.utils import executor
+from aiogram import executor
 from handlers import dp
 
 async def on_start(_):
