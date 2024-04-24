@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from aiogram import executor
 from handlers import dp
 
