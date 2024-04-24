@@ -1,4 +1,5 @@
-from loader import dp, bot
+from loader import bot
+from handlers import dp
 from aiogram.methods import DeleteWebhook
 import asyncio
 
