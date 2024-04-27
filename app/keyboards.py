@@ -6,11 +6,16 @@ start = InlineKeyboardMarkup(inline_keyboard=[
 
 main_menu = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🧑 Обо мне', callback_data='about'), InlineKeyboardButton(text='📞 Контакты', callback_data='contacts')],
-    [InlineKeyboardButton(text='🌐 Перейти на сайт', url='https://mail.ru/')]
+    [InlineKeyboardButton(text='🌐 Перейти на сайт', url='https://mail.ru/')],
+    [InlineKeyboardButton(text='💬 Написать нам', callback_data='write_us')]
 ])
 
 go_back = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🏠 Главное меню', callback_data='menu')]
+])
+
+user_phone = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Отправить номер', )]
 ])
 
 admin = InlineKeyboardMarkup(inline_keyboard=[

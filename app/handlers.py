@@ -24,6 +24,11 @@ class Sendall(StatesGroup):
     text = State()
     photo = State()
 
+class Userinfo(StatesGroup):
+    name = State()
+    contact = State()
+    question = State()
+
 # хендлеры
 
 @router.message(CommandStart())
@@ -57,7 +62,40 @@ async def contacts(callback: CallbackQuery):
     await callback.answer()
     await callback.message.edit_text(my_text.contacts, reply_markup=kb.go_back)
 
-# FSM: Sendall (рассылка сообщений всем пользователям)
+# FSM: Userinfo
+    
+@router.callback_query(F.data == 'write_us') # Userinfo 1 запрос имени
+async def userinfo_1(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+    await state.set_state(Userinfo.name)
+    await callback.message.answer('Ваше имя:')
+
+@router.message(Userinfo.name) # Userinfo 2 запрос номера
+async def userinfo_2(message: Message, state: FSMContext):
+    await state.update_data(name=message.text, user_id = message.from_user.id)
+    await state.set_state(Userinfo.contact)
+    await message.answer('Ваш номер телефона:')
+
+@router.message(Userinfo.contact) # Userinfo 3 запрос текста
+async def userinfo_3(message: Message, state: FSMContext):
+    await state.update_data(contact=message.text)
+    await state.set_state(Userinfo.question)
+    await message.answer('Какой у вас вопрос?')
+
+@router.message(Userinfo.question) # Userinfo 4 отправка админу
+async def userinfo_4(message: Message, state: FSMContext):
+    await state.update_data(question=message.text)
+    data = await state.get_data()
+    user_id = data['user_id']
+    question = data['question']
+    name = data['name']
+    contact = data['contact']
+    await bot.send_message(admins.admin1, f'🚩 Запрос от {user_id} 🚩\n\n'
+                           + question + f'\n\nИмя: {name}'
+                           + f'\nКонтактные данные: {contact}')
+    await message.answer('Ваш вопрос принят! Свяжемся с вами в ближайшее время!', reply_markup=kb.go_back)
+
+# FSM: Sendall (рассылка сообщений всем пользователям, админка)
 
 @router.callback_query(F.data == 'admin_sendall') # Sendall 1 пишем текст
 async def sendall_1(callback: CallbackQuery, state: FSMContext):
@@ -72,22 +110,21 @@ async def sendall_2(message: Message, state: FSMContext):
     await message.answer('Нужно прикрепить картинку?', reply_markup=kb.admin_picture)
 
 @router.callback_query(F.data == 'photo_yes') # Sendall 3 это если картинку надо
-async def sendall_1(callback: CallbackQuery, state: FSMContext):
+async def sendall_3(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await state.set_state(Sendall.photo)
     await callback.message.answer('Отправьте нужную картинку')
 
 @router.message(Sendall.photo) # Sendall 4 картинка загружена
-async def sendall_2(message: Message, state: FSMContext):
+async def sendall_4(message: Message, state: FSMContext):
     try:
         await state.update_data(photo=message.photo[-1].file_id)
         await message.answer('Картинка загружена', reply_markup=kb.admin_picture_ok)
     except TypeError:
         print ("Admin entering text instead of photo..")
     
-
 @router.callback_query(F.data == 'preview') # Sendall 5 предпросмотр
-async def sendall_1(callback: CallbackQuery, state: FSMContext):
+async def sendall_5(callback: CallbackQuery, state: FSMContext):
     await callback.answer('Предпросмотр', show_alert=True)
     data = await state.get_data()
     if data['photo']:
@@ -99,7 +136,7 @@ async def sendall_1(callback: CallbackQuery, state: FSMContext):
                                       reply_markup=kb.admin_message)
         
 @router.callback_query(F.data == 'admin_accept') # 
-async def sendall_3(callback: CallbackQuery, state: FSMContext):
+async def sendall_6(callback: CallbackQuery, state: FSMContext):
     await callback.answer('Рассылка запущена')
     data = await state.get_data()
     users = db.get_users()
@@ -125,7 +162,6 @@ async def sendall_0(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.answer(f'Все действия отменены', reply_markup=kb.go_back)
     await state.clear()
-
 
 # всеядный хендлер
 

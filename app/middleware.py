@@ -7,7 +7,7 @@ class Middleware1(BaseMiddleware):
                        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
                        event: TelegramObject,
                        data: Dict[str, Any]) -> Any:
-        # print('Действия до обработки')
+        # Действия до обработки
         result = await handler(event, data)
-        # print('Действия после обработки')
+        # Действия после обработки
         return result
