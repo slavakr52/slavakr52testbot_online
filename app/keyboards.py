@@ -19,9 +19,9 @@ user_phone = InlineKeyboardMarkup(inline_keyboard=[
 ])
 
 admin = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Рассылка всем', callback_data='admin_sendall')],
-    [InlineKeyboardButton(text='Рассылка одному', callback_data='admin_sendone')],
-    [InlineKeyboardButton(text='Заблокировать пользователя', callback_data='admin_block')],
+    [InlineKeyboardButton(text='Общая рассылка', callback_data='admin_sendall')],
+    [InlineKeyboardButton(text='Написать сообщение', callback_data='admin_sendone')],
+    [InlineKeyboardButton(text='Статистика', callback_data='admin_statistics')],
     [InlineKeyboardButton(text='Выход', callback_data='menu')]
 ])
 

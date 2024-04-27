@@ -62,6 +62,21 @@ async def contacts(callback: CallbackQuery):
     await callback.answer()
     await callback.message.edit_text(my_text.contacts, reply_markup=kb.go_back)
 
+@router.callback_query(F.data == 'admin_statistics') # общее кол-во юзеров + только активные
+async def contacts(callback: CallbackQuery):
+    await callback.answer()
+    users = db.get_users()
+    users_active = 0
+    users_count = 0
+    for row in users:
+        if int(row[1]) == 1:
+            users_active += 1
+        users_count += 1
+    await callback.message.edit_text('Пользователи:\n\t'
+                                     + f'Активных: {users_active}\n\t'
+                                     + f'Всего: {users_count}', 
+                                     reply_markup=kb.admin)
+
 # FSM: Userinfo
     
 @router.callback_query(F.data == 'write_us') # Userinfo 1 запрос имени
