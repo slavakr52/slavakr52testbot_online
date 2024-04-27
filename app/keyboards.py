@@ -1,4 +1,4 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
 
 start = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Начать работу', callback_data='menu')]
@@ -14,9 +14,9 @@ go_back = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🏠 Главное меню', callback_data='menu')]
 ])
 
-user_phone = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Отправить номер', )]
-])
+user_phone = ReplyKeyboardMarkup(keyboard=[
+    [KeyboardButton(text='Отправить номер', request_contact=True)]
+], resize_keyboard=True, one_time_keyboard=True, input_field_placeholder='Нажмите на кнопку ниже')
 
 admin = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Общая рассылка', callback_data='admin_sendall')],

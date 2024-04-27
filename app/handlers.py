@@ -1,6 +1,6 @@
 from aiogram import Router, F 
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 import time
@@ -93,27 +93,33 @@ async def userinfo_1(callback: CallbackQuery, state: FSMContext):
 async def userinfo_2(message: Message, state: FSMContext):
     await state.update_data(name=message.text, user_id = message.from_user.id)
     await state.set_state(Userinfo.contact)
-    await message.answer('Ваш номер телефона:')
+    await message.answer('Ваш номер телефона:', reply_markup=kb.user_phone)
 
 @router.message(Userinfo.contact) # Userinfo 3 запрос текста
 async def userinfo_3(message: Message, state: FSMContext):
-    await state.update_data(contact=message.text)
-    await state.set_state(Userinfo.question)
-    await message.answer('Какой у вас вопрос?')
+    try:
+        await state.update_data(contact=message.contact.phone_number)
+        await state.set_state(Userinfo.question)
+        await message.answer('Какой у вас вопрос?', reply_markup=ReplyKeyboardRemove())
+    except:
+        print('User enters text instead of clicking on button...')
 
 @router.message(Userinfo.question) # Userinfo 4 отправка админу
 async def userinfo_4(message: Message, state: FSMContext):
-    await state.update_data(question=message.text)
-    data = await state.get_data()
-    user_id = data['user_id']
-    question = data['question']
-    name = data['name']
-    contact = data['contact']
-    await bot.send_message(admins.admin1, f'🚩 Запрос от {user_id} 🚩\n\n'
-                           + question + f'\n\nИмя: {name}'
-                           + f'\nКонтактные данные: {contact}')
-    await message.answer('Ваш вопрос принят! Свяжемся с вами в ближайшее время!', reply_markup=kb.go_back)
-    await state.clear()
+    try:
+        await state.update_data(question=message.text)
+        data = await state.get_data()
+        user_id = data['user_id']
+        question = data['question']
+        name = data['name']
+        contact = data['contact']
+        await bot.send_message(admins.admin1, f'🚩 Запрос от {user_id} 🚩\n\n'
+                            + question + f'\n\nИмя: {name}'
+                            + f'\nКонтактные данные: {contact}')
+        await message.answer('Ваш вопрос принят! Свяжемся с вами в ближайшее время!', reply_markup=kb.go_back)
+        await state.clear()
+    except TypeError:
+        await message.answer('Пожалуйста, введите текст')
 
 # FSM: Sendone (отправка сообщения одному пользователю, админка)
 
@@ -138,11 +144,11 @@ async def sendone_3(message: Message, state: FSMContext):
     
 @router.callback_query(F.data == 'admin_accept_one') # Sendone 4 отправка
 async def sendone_4(callback: CallbackQuery, state: FSMContext):
-    await callback.answer()
+    await callback.answer('Отправка..')
     data = await state.get_data()
     await bot.send_message(data['user_id'], '🚩 Ответ от администратора 🚩\n\n'
                            + data['message'])
-    await callback.message.answer('⚠️ Рассылка завершена', reply_markup=kb.admin)
+    await callback.message.answer('⚠️ Отправка завершена', reply_markup=kb.admin)
     await state.clear()
 
 # FSM: Sendall (рассылка сообщений всем пользователям, админка)
@@ -171,7 +177,7 @@ async def sendall_4(message: Message, state: FSMContext):
         await state.update_data(photo=message.photo[-1].file_id)
         await message.answer('Картинка загружена', reply_markup=kb.admin_picture_ok)
     except TypeError:
-        print ("Admin entering text instead of photo..")
+        print ("Admin entering text instead of photo...")
     
 @router.callback_query(F.data == 'preview') # Sendall 5 предпросмотр
 async def sendall_5(callback: CallbackQuery, state: FSMContext):
@@ -185,7 +191,7 @@ async def sendall_5(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer(data['text'],
                                       reply_markup=kb.admin_mess_all)
         
-@router.callback_query(F.data == 'admin_accept_all') # 
+@router.callback_query(F.data == 'admin_accept_all') # Sendall 6 рассылка
 async def sendall_6(callback: CallbackQuery, state: FSMContext):
     await callback.answer('Рассылка запущена')
     data = await state.get_data()
