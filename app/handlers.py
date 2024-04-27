@@ -94,6 +94,7 @@ async def userinfo_4(message: Message, state: FSMContext):
                            + question + f'\n\nИмя: {name}'
                            + f'\nКонтактные данные: {contact}')
     await message.answer('Ваш вопрос принят! Свяжемся с вами в ближайшее время!', reply_markup=kb.go_back)
+    await state.clear()
 
 # FSM: Sendall (рассылка сообщений всем пользователям, админка)
 

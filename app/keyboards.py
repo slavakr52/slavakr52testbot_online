@@ -7,7 +7,7 @@ start = InlineKeyboardMarkup(inline_keyboard=[
 main_menu = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🧑 Обо мне', callback_data='about'), InlineKeyboardButton(text='📞 Контакты', callback_data='contacts')],
     [InlineKeyboardButton(text='🌐 Перейти на сайт', url='https://mail.ru/')],
-    [InlineKeyboardButton(text='💬 Написать нам', callback_data='write_us')]
+    [InlineKeyboardButton(text='💬 Задать вопрос', callback_data='write_us')]
 ])
 
 go_back = InlineKeyboardMarkup(inline_keyboard=[
