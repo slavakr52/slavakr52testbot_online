@@ -29,6 +29,10 @@ class Userinfo(StatesGroup):
     contact = State()
     question = State()
 
+class Sendone(StatesGroup):
+    user_id = State()
+    message = State()
+
 # хендлеры
 
 @router.message(CommandStart())
@@ -111,6 +115,36 @@ async def userinfo_4(message: Message, state: FSMContext):
     await message.answer('Ваш вопрос принят! Свяжемся с вами в ближайшее время!', reply_markup=kb.go_back)
     await state.clear()
 
+# FSM: Sendone (отправка сообщения одному пользователю, админка)
+
+@router.callback_query(F.data == 'admin_sendone') # Sendone 1 ввод id
+async def sendone_1(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+    await state.set_state(Sendone.user_id)
+    await callback.message.answer('Введите id пользователя:')
+    
+@router.message(Sendone.user_id) # Sendone 2 пишем сообщение
+async def sendone_2(message: Message, state: FSMContext):
+    await state.update_data(user_id=message.text)
+    await state.set_state(Sendone.message)
+    await message.answer('Введите сообщение:')
+
+@router.message(Sendone.message) # Sendone 3 предпросмотр
+async def sendone_3(message: Message, state: FSMContext):
+    await state.update_data(message=message.text)
+    data = await state.get_data()
+    await message.answer('Предпросмотр:\n\n'
+                         + data['message'], reply_markup=kb.admin_mess_one)
+    
+@router.callback_query(F.data == 'admin_accept_one') # Sendone 4 отправка
+async def sendone_4(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+    data = await state.get_data()
+    await bot.send_message(data['user_id'], '🚩 Ответ от администратора 🚩\n\n'
+                           + data['message'])
+    await callback.message.answer('⚠️ Рассылка завершена', reply_markup=kb.admin)
+    await state.clear()
+
 # FSM: Sendall (рассылка сообщений всем пользователям, админка)
 
 @router.callback_query(F.data == 'admin_sendall') # Sendall 1 пишем текст
@@ -141,17 +175,17 @@ async def sendall_4(message: Message, state: FSMContext):
     
 @router.callback_query(F.data == 'preview') # Sendall 5 предпросмотр
 async def sendall_5(callback: CallbackQuery, state: FSMContext):
-    await callback.answer('Предпросмотр', show_alert=True)
+    await callback.answer('⚠️ Внимание! Предпросмотр сообщения', show_alert=True)
     data = await state.get_data()
     if data['photo']:
         await callback.message.answer_photo(photo=data['photo'],
                                             caption=data['text'],
-                                            reply_markup=kb.admin_message)
+                                            reply_markup=kb.admin_mess_all)
     else:
         await callback.message.answer(data['text'],
-                                      reply_markup=kb.admin_message)
+                                      reply_markup=kb.admin_mess_all)
         
-@router.callback_query(F.data == 'admin_accept') # 
+@router.callback_query(F.data == 'admin_accept_all') # 
 async def sendall_6(callback: CallbackQuery, state: FSMContext):
     await callback.answer('Рассылка запущена')
     data = await state.get_data()
@@ -170,13 +204,13 @@ async def sendall_6(callback: CallbackQuery, state: FSMContext):
                 db.set_active(row[0], 1)
         except:
             db.set_active(row[0], 0) # если не дошло, то active=0
-    await callback.message.answer('⚠️ Рассылка завершена', reply_markup=kb.go_back)
+    await callback.message.answer('⚠️ Рассылка завершена', reply_markup=kb.admin)
     await state.clear()
 
-@router.callback_query(F.data == 'admin_cancel') # Sendall отмена
+@router.callback_query(F.data == 'admin_cancel') # Sendall + Sendone отмена
 async def sendall_0(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
-    await callback.message.answer(f'Все действия отменены', reply_markup=kb.go_back)
+    await callback.message.answer(f'⚠️ Все действия отменены', reply_markup=kb.admin)
     await state.clear()
 
 # всеядный хендлер

@@ -25,8 +25,13 @@ admin = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Выход', callback_data='menu')]
 ])
 
-admin_message = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Отправить', callback_data='admin_accept')],
+admin_mess_one = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Отправить', callback_data='admin_accept_one')],
+    [InlineKeyboardButton(text='Отмена', callback_data='admin_cancel')]
+])
+
+admin_mess_all = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Отправить', callback_data='admin_accept_all')],
     [InlineKeyboardButton(text='Отмена', callback_data='admin_cancel')]
 ])
 
